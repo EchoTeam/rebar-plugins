@@ -1,0 +1,8 @@
+{application, echo_rebar_plugins, [
+	{description, "Echo Reabr Plugins"},
+	{vsn, "1.0.0"},
+	{registered, []},
+	{applications, [kernel, stdlib]},
+	{module, []},
+	{env, []}
+]}.
