@@ -2,7 +2,7 @@
 
 ## rebar_lock_deps_plugin
 
-See [rebar-lock-deps](https://github.com/lukyanov/rebar-lock-deps)
+See [rebar-lock-deps](https://github.com/EchoTeam/rebar-lock-deps)
 
 ## rebar_genappup_plugin
 
