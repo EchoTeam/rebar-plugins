@@ -2,7 +2,8 @@
 
 -module(rebar_genappup_plugin).
 -export([
-    'post_compile'/2
+    'post_compile'/2,
+    'post_clean'/2
 ]).
 
 'post_compile'(Config, _AppFile) ->
@@ -11,6 +12,14 @@
     lists:foreach(fun(File) ->
         copy_appup_src(Config, File)
     end, Files).
+
+'post_clean'(Config, _AppFile) ->
+    SrcDir  = filename:join(rebar_utils:get_cwd(), "src"),
+    Files = filelib:wildcard(SrcDir ++ "/*.appup.src"),
+    lists:foreach(fun(File) ->
+        delete_appup(Config, File)
+    end, Files).
+
 
 copy_appup_src(Config, Src) ->
     App  = filename:basename(Src, ".appup.src"),
@@ -27,6 +36,12 @@ copy_appup_src(Config, Src) ->
                 [Src, DestDir]),
             halt(1)
     end.
+
+delete_appup(Config, Src) ->
+    App  = filename:basename(Src, ".appup.src"),
+    Dest = filename:join([get_deps_dir(Config, App),
+        "ebin", App ++ ".appup"]),
+    file:delete(Dest).
 
 get_deps_dir(Config, App) ->
     BaseDir = rebar_config:get_xconf(Config, base_dir, []),
