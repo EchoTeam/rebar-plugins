@@ -22,28 +22,32 @@
 
 
 copy_appup_src(Config, Src) ->
+    io:format("Found ~s.", [filename:basename(Src)]),
     App  = filename:basename(Src, ".appup.src"),
-    Dest = filename:join([get_deps_dir(Config, App),
+    Dest = filename:join([get_app_dir(Config, App),
         "ebin", App ++ ".appup"]),
-    DestDir = filename:dirname(Dest),
-    case filelib:is_dir(DestDir) of
-        true ->
-            io:format("Found ~s. Making ~s...~n",
-                [filename:basename(Src), filename:basename(Dest)]),
-            {ok, _} = file:copy(Src, Dest);
-        false ->
-            io:format("ERROR: Can't process ~p. Path ~p not found.~n",
-                [Src, DestDir]),
-            halt(1)
-    end.
+    io:format(" Making ~s...~n", [filename:basename(Dest)]),
+    {ok, _} = file:copy(Src, Dest).
 
 delete_appup(Config, Src) ->
     App  = filename:basename(Src, ".appup.src"),
-    Dest = filename:join([get_deps_dir(Config, App),
+    Dest = filename:join([get_app_dir(Config, App),
         "ebin", App ++ ".appup"]),
     file:delete(Dest).
 
-get_deps_dir(Config, App) ->
-    BaseDir = rebar_config:get_xconf(Config, base_dir, []),
+get_app_dir(Config, App) ->
     DepsDir = rebar_config:get_xconf(Config, deps_dir, "deps"),
-    filename:join([BaseDir, DepsDir, App]).
+    LibDirs = rebar_config:get(Config, lib_dirs, []),
+    find_app(Config, App,
+        lists:umerge([DepsDir], lists:sort(LibDirs))).
+
+find_app(_Config, App, []) ->
+    io:format("~nERROR: Can't find app ~p.~n", [App]),
+    halt(1);
+find_app(Config, App, [Dir | RestDirs]) ->
+    BaseDir = rebar_config:get_xconf(Config, base_dir, []),
+    AppDir = filename:join([BaseDir, Dir, App]),
+    case filelib:is_dir(AppDir) of
+        true -> AppDir;
+        false -> find_app(Config, App, RestDirs)
+    end.
